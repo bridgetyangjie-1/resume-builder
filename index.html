@@ -806,6 +806,21 @@
       return s + ' — ' + e;
     }
 
+    /** 按时间降序排列（最新的排最前） */
+    function sortByDate(arr) {
+      arr.sort((a, b) => {
+        const val = (s) => {
+          if (!s || s === '至今') return '9999-99';
+          return s;
+        };
+        // 主：endDate 降序
+        const endDiff = val(b.endDate).localeCompare(val(a.endDate));
+        if (endDiff !== 0) return endDiff;
+        // 次：startDate 降序
+        return val(b.startDate).localeCompare(val(a.startDate));
+      });
+    }
+
     // ================================================================
     //  LocalStorage 持久化
     // ================================================================
@@ -926,6 +941,9 @@
         const parsed = JSON.parse(text);
         // 填充数据
         data = normalizeLoadedData(parsed);
+        // 按时间排降序
+        if (data.workExperience) sortByDate(data.workExperience);
+        if (data.education) sortByDate(data.education);
         renderAll();
         saveToStorage();
         fileHandle = handle;
@@ -1139,6 +1157,7 @@
         btn.addEventListener('click', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           data.workExperience.splice(idx, 1);
+          sortByDate(data.workExperience);
           renderWorkEntries();
           renderCanvas();
           saveToStorage();
@@ -1153,6 +1172,8 @@
       const field = el.dataset.field;
       if (data.workExperience[idx]) {
         data.workExperience[idx][field] = el.value;
+        sortByDate(data.workExperience);
+        renderWorkEntries();
         renderCanvas();
         saveToStorage();
         autoSyncToFile();
@@ -1206,6 +1227,7 @@
         btn.addEventListener('click', (e) => {
           const idx = parseInt(e.target.dataset.idx);
           data.education.splice(idx, 1);
+          sortByDate(data.education);
           renderEduEntries();
           renderCanvas();
           saveToStorage();
@@ -1220,6 +1242,8 @@
       const field = el.dataset.field;
       if (data.education[idx]) {
         data.education[idx][field] = el.value;
+        sortByDate(data.education);
+        renderEduEntries();
         renderCanvas();
         saveToStorage();
         autoSyncToFile();
@@ -1237,6 +1261,8 @@
         endDate: '',
         description: ''
       });
+      // 新条目排在最后，无需排序，但为了一致性仍调用
+      sortByDate(data.workExperience);
       renderWorkEntries();
       renderCanvas();
       saveToStorage();
@@ -1254,6 +1280,7 @@
         startDate: '',
         endDate: ''
       });
+      sortByDate(data.education);
       renderEduEntries();
       renderCanvas();
       saveToStorage();
@@ -1443,6 +1470,10 @@
         data.education.forEach(item => { if (!item.id) item.id = generateId('e'); });
         saveToStorage();
       }
+
+      // 按时间排降序
+      if (data.workExperience) sortByDate(data.workExperience);
+      if (data.education) sortByDate(data.education);
 
       bindBasicInputs();
       renderAll();
