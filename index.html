@@ -1635,57 +1635,89 @@
       }
     }
 
+    /**
+     * 将文本中的 bullet 行（以 • 开头）转换为 Word 兼容的 <ul><li>
+     * 非 bullet 行保留为普通段落
+     */
+    function textToWordHtml(text) {
+      if (!text) return '';
+      var lines = text.split('\n');
+      var result = '';
+      var inList = false;
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line.startsWith('•') || line.startsWith('- ') || line.startsWith('* ')) {
+          // 去除前导符号
+          var content = line.replace(/^[•\-*]\s*/, '');
+          if (!inList) { result += '<ul style="margin:3px 0 3px 14px;padding:0;">'; inList = true; }
+          result += '<li style="font-size:9.5pt;color:#4b5563;line-height:1.6;margin-bottom:1px;">' + escHtml(content) + '</li>';
+        } else {
+          if (inList) { result += '</ul>'; inList = false; }
+          if (line) {
+            result += '<div style="font-size:9.5pt;color:#4b5563;line-height:1.6;margin-top:2px;">' + escHtml(line) + '</div>';
+          }
+        }
+      }
+      if (inList) result += '</ul>';
+      return result;
+    }
+
     /** 下载 Word（生成兼容 Word 的 HTML 文档，保存为 .doc） */
     function downloadWord() {
       try {
         setExportStatus('正在生成 Word 文档…', false);
         btnExportWord.disabled = true;
 
-        const d = data;
-        const name = d.name || '简历';
-        const skills = parseSkills(d.skills || '');
-        const hasAvatar = !!d.avatar;
+        var d = data;
+        var name = d.name || '简历';
+        var skillsList = parseSkills(d.skills || '');
+        var hasAvatar = !!d.avatar;
 
-        // 构建 Word 兼容的 HTML
-        let bodyHTML = '';
+        // ====== 构建 Word 兼容 HTML（避免 flexbox / gap / border-radius 等） ======
+        var bodyHTML = '';
 
-        // --- 头部 ---
-        bodyHTML += '<div style="display:flex;align-items:flex-start;gap:15px;margin-bottom:18px;border-bottom:2px solid #1f2937;padding-bottom:14px;">';
-        bodyHTML += '<div style="flex:1;">';
-        bodyHTML += '<h1 style="font-size:24pt;font-weight:700;color:#111827;margin:0 0 2px 0;">' + escHtml(name) + '</h1>';
+        // --- 头部：用表格布局（Word 最稳） ---
+        var headerHTML = '';
+        // 左侧：姓名 + 信息
+        var leftCol = '';
+        leftCol += '<div style="font-size:24pt;font-weight:700;color:#111827;margin:0;">' + escHtml(name) + '</div>';
         if (d.position) {
-          bodyHTML += '<div style="font-size:12pt;font-weight:600;color:#2563eb;margin-bottom:6px;">' + escHtml(d.position) + '</div>';
+          leftCol += '<div style="font-size:12pt;font-weight:600;color:#2563eb;margin:4px 0 2px 0;">' + escHtml(d.position) + '</div>';
         }
-        bodyHTML += '<div style="font-size:9pt;color:#4b5563;">';
-        const contactParts = [];
-        if (d.phone) contactParts.push(escHtml(d.phone));
-        if (d.email) contactParts.push(escHtml(d.email));
-        if (d.website) contactParts.push(escHtml(d.website));
-        bodyHTML += contactParts.join(' &nbsp;|&nbsp; ');
-        bodyHTML += '</div></div>';
+        var contacts = [];
+        if (d.phone) contacts.push(escHtml(d.phone));
+        if (d.email) contacts.push(escHtml(d.email));
+        if (d.website) contacts.push(escHtml(d.website));
+        leftCol += '<div style="font-size:9pt;color:#4b5563;">' + contacts.join('&nbsp;&nbsp;|&nbsp;&nbsp;') + '</div>';
+
         if (hasAvatar) {
-          bodyHTML += '<div style="width:80px;height:80px;border-radius:50%;overflow:hidden;border:2px solid #e5e7eb;flex-shrink:0;">';
-          bodyHTML += '<img src="' + escHtml(d.avatar) + '" style="width:100%;height:100%;object-fit:cover;display:block;" />';
-          bodyHTML += '</div>';
+          headerHTML += '<table cellpadding="0" cellspacing="0" style="width:100%;border-bottom:2px solid #1f2937;padding-bottom:12px;margin-bottom:16px;"><tr>';
+          headerHTML += '<td style="vertical-align:top;">' + leftCol + '</td>';
+          headerHTML += '<td style="width:80px;vertical-align:top;text-align:right;">';
+          headerHTML += '<div style="width:76px;height:76px;border:2px solid #e5e7eb;">';
+          headerHTML += '<img src="' + escHtml(d.avatar) + '" style="width:76px;height:76px;display:block;" />';
+          headerHTML += '</div></td></tr></table>';
+        } else {
+          headerHTML += '<div style="border-bottom:2px solid #1f2937;padding-bottom:12px;margin-bottom:16px;">' + leftCol + '</div>';
         }
-        bodyHTML += '</div>';
+        bodyHTML += headerHTML;
 
         // --- 工作经历 ---
         if (d.workExperience && d.workExperience.length > 0) {
           bodyHTML += '<div style="margin-bottom:14px;">';
-          bodyHTML += '<h2 style="font-size:13pt;font-weight:700;color:#111827;border-bottom:1.5px solid #d1d5db;padding-bottom:3px;margin-bottom:8px;">工作经历</h2>';
-          d.workExperience.forEach(item => {
+          bodyHTML += '<div style="font-size:13pt;font-weight:700;color:#111827;border-bottom:1.5px solid #d1d5db;padding-bottom:3px;margin-bottom:8px;">工作经历</div>';
+          d.workExperience.forEach(function(item) {
             if (!item.company && !item.title) return;
-            bodyHTML += '<div style="margin-bottom:10px;">';
-            bodyHTML += '<div style="display:flex;justify-content:space-between;align-items:baseline;">';
-            if (item.company) bodyHTML += '<span style="font-size:11pt;font-weight:700;color:#1f2937;">' + escHtml(item.company) + '</span>';
-            if (item.title) bodyHTML += '<span style="font-size:10pt;font-weight:600;color:#374151;">' + escHtml(item.title) + '</span>';
-            bodyHTML += '<span style="font-size:9pt;color:#6b7280;">' + formatDateRange(item.startDate, item.endDate) + '</span>';
-            bodyHTML += '</div>';
+            // 公司 + 职位 + 日期：用三列表格
+            bodyHTML += '<table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:8px;"><tr>';
+            bodyHTML += '<td style="font-size:10.5pt;font-weight:700;color:#1f2937;padding:0;">' + escHtml(item.company || '') + '</td>';
+            bodyHTML += '<td style="font-size:9.5pt;font-weight:600;color:#374151;padding:0 8px;text-align:center;white-space:nowrap;">' + escHtml(item.title || '') + '</td>';
+            bodyHTML += '<td style="font-size:8.5pt;color:#6b7280;padding:0;text-align:right;white-space:nowrap;">' + formatDateRange(item.startDate, item.endDate) + '</td>';
+            bodyHTML += '</tr></table>';
+            // 工作描述：bullet -> ul/li
             if (item.description) {
-              bodyHTML += '<div style="font-size:9.5pt;color:#4b5563;line-height:1.6;margin-top:2px;white-space:pre-wrap;">' + escHtml(item.description) + '</div>';
+              bodyHTML += textToWordHtml(item.description);
             }
-            bodyHTML += '</div>';
           });
           bodyHTML += '</div>';
         }
@@ -1693,40 +1725,38 @@
         // --- 教育经历 ---
         if (d.education && d.education.length > 0) {
           bodyHTML += '<div style="margin-bottom:14px;">';
-          bodyHTML += '<h2 style="font-size:13pt;font-weight:700;color:#111827;border-bottom:1.5px solid #d1d5db;padding-bottom:3px;margin-bottom:8px;">教育经历</h2>';
-          d.education.forEach(item => {
+          bodyHTML += '<div style="font-size:13pt;font-weight:700;color:#111827;border-bottom:1.5px solid #d1d5db;padding-bottom:3px;margin-bottom:8px;">教育经历</div>';
+          d.education.forEach(function(item) {
             if (!item.school) return;
-            bodyHTML += '<div style="margin-bottom:6px;">';
-            bodyHTML += '<div style="display:flex;justify-content:space-between;align-items:baseline;">';
-            bodyHTML += '<span style="font-size:11pt;font-weight:700;color:#1f2937;">' + escHtml(item.school) + '</span>';
-            if (item.major) bodyHTML += '<span style="font-size:10pt;color:#374151;">' + escHtml(item.major) + '</span>';
-            bodyHTML += '<span style="font-size:9pt;color:#6b7280;">' + formatDateRange(item.startDate, item.endDate) + '</span>';
-            bodyHTML += '</div>';
+            bodyHTML += '<table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:4px;"><tr>';
+            bodyHTML += '<td style="font-size:10.5pt;font-weight:700;color:#1f2937;padding:0;">' + escHtml(item.school) + '</td>';
+            bodyHTML += '<td style="font-size:9.5pt;color:#374151;padding:0 8px;text-align:center;white-space:nowrap;">' + escHtml(item.major || '') + '</td>';
+            bodyHTML += '<td style="font-size:8.5pt;color:#6b7280;padding:0;text-align:right;white-space:nowrap;">' + formatDateRange(item.startDate, item.endDate) + '</td>';
+            bodyHTML += '</tr></table>';
             if (item.degree) {
-              bodyHTML += '<div style="font-size:9.5pt;color:#4b5563;">' + escHtml(item.degree) + '</div>';
+              bodyHTML += '<div style="font-size:9pt;color:#4b5563;margin-bottom:4px;">' + escHtml(item.degree) + '</div>';
             }
-            bodyHTML += '</div>';
           });
           bodyHTML += '</div>';
         }
 
-        // --- 核心技能 ---
-        if (skills.length > 0) {
+        // --- 核心技能（不用 flexbox，纯 inline-block + margin） ---
+        if (skillsList.length > 0) {
           bodyHTML += '<div style="margin-bottom:14px;">';
-          bodyHTML += '<h2 style="font-size:13pt;font-weight:700;color:#111827;border-bottom:1.5px solid #d1d5db;padding-bottom:3px;margin-bottom:8px;">核心技能</h2>';
-          bodyHTML += '<div style="display:flex;flex-wrap:wrap;gap:4px 6px;">';
-          skills.forEach(s => {
-            bodyHTML += '<span style="font-size:9pt;padding:1px 8px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:10px;display:inline-block;margin:2px 0;">' + escHtml(s) + '</span>';
+          bodyHTML += '<div style="font-size:13pt;font-weight:700;color:#111827;border-bottom:1.5px solid #d1d5db;padding-bottom:3px;margin-bottom:8px;">核心技能</div>';
+          bodyHTML += '<div style="line-height:2.0;">';
+          skillsList.forEach(function(s) {
+            bodyHTML += '<span style="font-size:9pt;padding:2px 10px;background-color:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;display:inline-block;margin:2px 4px 2px 0;mso-border-alt:none;mso-padding-alt:0;">' + escHtml(s) + '</span>';
           });
           bodyHTML += '</div></div>';
         }
 
-        const fullHTML = '<!DOCTYPE html>\n<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">\n<head>\n<meta charset="UTF-8">\n<title>' + escHtml(name) + ' - 简历</title>\n<style>\n@page { size: A4; margin: 15mm 18mm; }\nbody { font-family: Arial, Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif; color: #1f2937; line-height: 1.5; font-size: 10pt; }\n</style>\n</head>\n<body>\n' + bodyHTML + '\n</body>\n</html>';
+        var fullHTML = '<!DOCTYPE html>\n<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">\n<head>\n<meta charset="UTF-8">\n<title>' + escHtml(name) + ' - 简历</title>\n<style>\n@page { size: A4; margin: 15mm 18mm; }\nbody { font-family: Arial, Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif; color: #1f2937; line-height: 1.5; font-size: 10pt; }\nul { margin:2px 0 2px 16px; padding:0; }\nli { margin-bottom:1px; }\n</style>\n</head>\n<body>\n' + bodyHTML + '\n</body>\n</html>';
 
-        // 下载为 .doc（Word 可打开 HTML 内容）
-        const blob = new Blob([fullHTML], { type: 'application/msword;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        // 下载为 .doc
+        var blob = new Blob([fullHTML], { type: 'application/msword;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
         a.href = url;
         a.download = name + '_简历.doc';
         document.body.appendChild(a);
