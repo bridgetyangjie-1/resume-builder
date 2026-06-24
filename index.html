@@ -691,6 +691,10 @@
           <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2M7 10l5 5 5-5M12 15V3"/></svg>
           本地同步
         </div>
+        <div style="font-size:11px;color:#6b7280;background:#fef3c7;border:1px solid #fde68a;border-radius:5px;padding:6px 10px;margin-bottom:10px;line-height:1.5;">
+          🔒 隐私保护：关闭窗口后数据自动清除，不会残留。
+          <strong>请务必保存到本地文件</strong>。
+        </div>
         <div class="sync-actions">
           <button class="btn btn-primary btn-sm" id="btnNewFile" title="新建一个本地 JSON 简历文件">
             <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:14px;height:14px;"><path d="M12 5v14m-7-7h14"/></svg>
@@ -960,25 +964,16 @@
     }
 
     // ================================================================
-    //  LocalStorage 持久化
+    //  LocalStorage 持久化（隐私安全模式：不持久存储）
     // ================================================================
 
-    const STORAGE_KEY = 'resume_builder_data';
-
     function saveToStorage() {
-      try {
-        const json = JSON.stringify(data);
-        localStorage.setItem(STORAGE_KEY, json);
-      } catch (e) {
-        console.warn('LocalStorage 写入失败:', e);
-      }
+      // 隐私安全：不将数据写入 LocalStorage
+      // 关闭窗口后数据自动消失，用户需主动保存到本地文件
     }
 
     function loadFromStorage() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
-      } catch (e) { /* ignore */ }
+      // 隐私安全：不从 LocalStorage 恢复数据
       return null;
     }
 
@@ -1753,6 +1748,29 @@
     btnExportWord.addEventListener('click', downloadWord);
 
     // ================================================================
+    //  隐私安全：关闭提醒
+    // ================================================================
+
+    /** 标记数据是否已被用户主动保存过 */
+    let hasSavedLocally = false;
+
+    // 监听本地文件保存动作，标记已保存
+    btnSaveFile.addEventListener('click', () => { hasSavedLocally = true; });
+    btnNewFile.addEventListener('click', () => {
+      // 新建后立即写入，算已保存
+      setTimeout(() => { hasSavedLocally = true; }, 500);
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+      if (hasSavedLocally) return; // 已保存则不打扰
+      // 标准 beforeunload 提示
+      e.preventDefault();
+      e.returnValue =
+        '您的简历数据尚未保存到本地文件，关闭后数据将丢失。\n\n' +
+        '建议：点击左侧「新建本地文件」或「保存到本地」按钮，将数据保存为 .json 文件。';
+    });
+
+    // ================================================================
     //  缩放控制
     // ================================================================
 
@@ -1800,25 +1818,11 @@
     // ================================================================
 
     function init() {
-      // 优先从 LocalStorage 读取
-      const stored = loadFromStorage();
-      if (stored && stored.name) {
-        data = normalizeLoadedData(stored);
-        // 补全可能缺失的 id
-        if (data.workExperience) {
-          data.workExperience.forEach(item => { if (!item.id) item.id = generateId('w'); });
-        }
-        if (data.education) {
-          data.education.forEach(item => { if (!item.id) item.id = generateId('e'); });
-        }
-      } else {
-        // 使用默认数据
-        data = JSON.parse(JSON.stringify(DEFAULT_DATA));
-        // 确保 ID
-        data.workExperience.forEach(item => { if (!item.id) item.id = generateId('w'); });
-        data.education.forEach(item => { if (!item.id) item.id = generateId('e'); });
-        saveToStorage();
-      }
+      // 隐私安全：始终使用默认示例数据，不从 LocalStorage 恢复
+      data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      // 确保 ID
+      data.workExperience.forEach(item => { if (!item.id) item.id = generateId('w'); });
+      data.education.forEach(item => { if (!item.id) item.id = generateId('e'); });
 
       // 按时间排降序
       if (data.workExperience) sortByDate(data.workExperience);
