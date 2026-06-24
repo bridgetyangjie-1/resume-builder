@@ -17,13 +17,14 @@ export async function POST(request: NextRequest) {
 
     if (jdContext) {
       systemPrompt +=
-        "\n\n请重点确保这段经历中体现出以下 ATS 关键词：" +
-        (jdContext.ats_keywords?.join("、") || "无") +
-        "，并证明具备交付 " +
-        (jdContext.core_deliverables?.join("、") || "相关成果") +
-        " 的能力。同时注意展现以下软素质：" +
-        (jdContext.soft_skills?.join("、") || "无") +
-        "。";
+        "\n\n请严格参考以下 JD 分析结果进行针对性优化：\n" +
+        "1. 重点融入这批 ATS 关键词：" + (jdContext.ats_keywords?.join("、") || "无") + "\n" +
+        "2. 强调具备交付这些成果的能力：" + (jdContext.core_deliverables?.join("、") || "相关成果") + "\n" +
+        "3. 侧面展现软素质：" + (jdContext.soft_skills?.join("、") || "无") + "\n" +
+        "4. 候选人画像匹配：该岗位要求" + (jdContext.target_profile?.industry_experience?.join("、") || "相关行业") + "经验，过往担任" + (jdContext.target_profile?.past_roles?.join("、") || "相关职位") + "，请确保经历描述体现与之匹配的深度\n" +
+        "5. 硬性门槛暗示：特别注意展现——" + (jdContext.requirements_tiers?.must_have?.join("、") || "无") + "\n" +
+        (jdContext.requirements_tiers?.nice_to_have?.length ? "6. 加分项（如有余力则兼顾）：" + jdContext.requirements_tiers.nice_to_have.join("、") : "") + "\n" +
+        "6. 遵循简历修改策略：" + (jdContext.resume_strategy?.join("；") || "无");
     }
 
     const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);

@@ -35,11 +35,25 @@ interface ResumeData {
   skills: string;
 }
 
+interface TargetProfile {
+  industry_experience: string[];
+  past_roles: string[];
+  education_certification: string[];
+  years_experience: string;
+}
+
+interface RequirementsTiers {
+  must_have: string[];
+  nice_to_have: string[];
+}
+
 interface JDAnalysis {
   ats_keywords: string[];
   core_deliverables: string[];
   soft_skills: string[];
   resume_strategy: string[];
+  target_profile: TargetProfile;
+  requirements_tiers: RequirementsTiers;
 }
 
 const DEFAULT_DATA: ResumeData = {
@@ -920,6 +934,76 @@ export default function Home() {
                       ))}
                     </ul>
                   </div>
+
+                  {/* Card 5: Candidate Profile */}
+                  {jdResult.target_profile && (
+                  <div className="jd-card jd-card-wide">
+                    <div className="jd-card-title">🎯 候选人画像</div>
+                    {jdResult.target_profile.years_experience && (
+                    <div className="profile-section">
+                      <div className="profile-subtitle">📅 经验年限</div>
+                      <div className="profile-value">{jdResult.target_profile.years_experience}</div>
+                    </div>
+                    )}
+                    {jdResult.target_profile.industry_experience && (
+                    <div className="profile-section">
+                      <div className="profile-subtitle">🏢 行业经验偏好</div>
+                      <ul className="jd-list">
+                        {jdResult.target_profile.industry_experience.map((item, i) => (
+                          <li key={i}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    )}
+                    {jdResult.target_profile.past_roles && (
+                    <div className="profile-section">
+                      <div className="profile-subtitle">💼 过往角色</div>
+                      <ul className="jd-list">
+                        {jdResult.target_profile.past_roles.map((item, i) => (
+                          <li key={i}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    )}
+                    {jdResult.target_profile.education_certification && (
+                    <div className="profile-section">
+                      <div className="profile-subtitle">🎓 学历与认证</div>
+                      <ul className="jd-list">
+                        {jdResult.target_profile.education_certification.map((item, i) => (
+                          <li key={i}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    )}
+                  </div>
+                  )}
+
+                  {/* Card 6: Must-have vs Nice-to-have */}
+                  {jdResult.requirements_tiers && (
+                  <div className="jd-card jd-card-wide">
+                    <div className="jd-card-title">📊 硬性门槛 vs 加分项</div>
+                    {jdResult.requirements_tiers.must_have && (
+                    <div className="tier-section">
+                      <div className="tier-label tier-must">🔴 硬性门槛（必须满足）</div>
+                      <ul className="jd-list">
+                        {jdResult.requirements_tiers.must_have.map((item, i) => (
+                          <li key={i} className="tier-item-must">{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    )}
+                    {jdResult.requirements_tiers.nice_to_have && (
+                    <div className="tier-section" style={{ marginTop: 10 }}>
+                      <div className="tier-label tier-nice">🟢 加分项（有则更好）</div>
+                      <ul className="jd-list">
+                        {jdResult.requirements_tiers.nice_to_have.map((item, i) => (
+                          <li key={i} className="tier-item-nice">{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    )}
+                  </div>
+                  )}
                 </div>
               </>
             )}

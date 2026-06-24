@@ -321,6 +321,56 @@ body {
   color: #166534;
 }
 
+/* Card wide variant */
+.jd-card-wide {
+  grid-column: 1 / -1;
+}
+
+/* Candidate Profile */
+.profile-section {
+  margin-bottom: 10px;
+}
+.profile-subtitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
+}
+.profile-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+  padding: 4px 0;
+}
+
+/* Tiers */
+.tier-section {
+  padding: 0;
+}
+.tier-label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-block;
+}
+.tier-must {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+.tier-nice {
+  background: #f0fdf4;
+  color: #15803d;
+}
+.tier-item-must {
+  color: #7f1d1d !important;
+}
+.tier-item-nice {
+  color: #166534 !important;
+}
+
 /* Loading spinner */
 .loading-spinner {
   display: flex;
