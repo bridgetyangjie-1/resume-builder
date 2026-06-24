@@ -35,25 +35,12 @@ interface ResumeData {
   skills: string;
 }
 
-interface TargetProfile {
-  industry_experience: string[];
-  past_roles: string[];
-  education_certification: string[];
-  years_experience: string;
-}
-
-interface RequirementsTiers {
-  must_have: string[];
-  nice_to_have: string[];
-}
-
 interface JDAnalysis {
-  ats_keywords: string[];
-  core_deliverables: string[];
-  soft_skills: string[];
-  resume_strategy: string[];
-  target_profile: TargetProfile;
-  requirements_tiers: RequirementsTiers;
+  responsibilities: string[];
+  hard_requirements: string[];
+  soft_requirements: string[];
+  ideal_candidate: string;
+  keywords: string[];
 }
 
 const DEFAULT_DATA: ResumeData = {
@@ -779,7 +766,7 @@ export default function Home() {
 
   // ============ JD Context Banner ============
   const jdContextKeywords = jdContext
-    ? jdContext.ats_keywords?.slice(0, 5).join(", ")
+    ? jdContext.keywords?.slice(0, 5).join(", ")
     : "";
 
   // ============ Render ============
@@ -875,134 +862,58 @@ export default function Home() {
 
             {jdResult && !jdLoading && (
               <>
-                <div
-                  style={{
-                    fontSize: 16,
-                    fontWeight: 700,
-                    marginBottom: 4,
-                  }}
-                >
-                  📊 逆向解析结果
-                </div>
-                <div className="jd-cards-grid">
-                  {/* Card 1: ATS Keywords */}
-                  <div className="jd-card">
-                    <div className="jd-card-title">🎯 ATS 关键词雷达</div>
-                    <div className="ats-tags">
-                      {jdResult.ats_keywords.map((kw, i) => {
-                        const imp =
-                          i < Math.ceil(jdResult.ats_keywords.length * 0.3)
-                            ? "importance-high"
-                            : i < Math.ceil(jdResult.ats_keywords.length * 0.7)
-                              ? "importance-mid"
-                              : "importance-low";
-                        return (
-                          <span key={i} className={`ats-tag ${imp}`}>
-                            {kw}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Card 2: Core Deliverables */}
-                  <div className="jd-card">
-                    <div className="jd-card-title">💼 核心业务痛点与交付物</div>
-                    <ul className="jd-list">
-                      {jdResult.core_deliverables.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Card 3: Soft Skills */}
-                  <div className="jd-card">
-                    <div className="jd-card-title">⚠️ 隐形红线与软素质</div>
-                    <ul className="jd-list">
-                      {jdResult.soft_skills.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Card 4: Strategy */}
-                  <div className="jd-card">
-                    <div className="jd-card-title">💡 专属修改策略</div>
-                    <ul className="strategy-list">
-                      {jdResult.resume_strategy.map((item, i) => (
-                        <li key={i}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Card 5: Candidate Profile */}
-                  {jdResult.target_profile && (
-                  <div className="jd-card jd-card-wide">
-                    <div className="jd-card-title">🎯 候选人画像</div>
-                    {jdResult.target_profile.years_experience && (
-                    <div className="profile-section">
-                      <div className="profile-subtitle">📅 经验年限</div>
-                      <div className="profile-value">{jdResult.target_profile.years_experience}</div>
-                    </div>
-                    )}
-                    {jdResult.target_profile.industry_experience && (
-                    <div className="profile-section">
-                      <div className="profile-subtitle">🏢 行业经验偏好</div>
-                      <ul className="jd-list">
-                        {jdResult.target_profile.industry_experience.map((item, i) => (
+                <div className="jd-results-scroll">
+                  <div className="jd-grid-2x2">
+                    {/* 岗位职责 */}
+                    <div className="jd-mini-card">
+                      <div className="jd-mini-icon">📋</div>
+                      <div className="jd-mini-title">岗位职责</div>
+                      <ul className="jd-bullet-list">
+                        {jdResult.responsibilities?.map((item, i) => (
                           <li key={i}>{item}</li>
                         ))}
                       </ul>
                     </div>
-                    )}
-                    {jdResult.target_profile.past_roles && (
-                    <div className="profile-section">
-                      <div className="profile-subtitle">💼 过往角色</div>
-                      <ul className="jd-list">
-                        {jdResult.target_profile.past_roles.map((item, i) => (
+                    {/* 硬性要求 */}
+                    <div className="jd-mini-card">
+                      <div className="jd-mini-icon">🎯</div>
+                      <div className="jd-mini-title">硬性要求</div>
+                      <ul className="jd-bullet-list">
+                        {jdResult.hard_requirements?.map((item, i) => (
                           <li key={i}>{item}</li>
                         ))}
                       </ul>
                     </div>
-                    )}
-                    {jdResult.target_profile.education_certification && (
-                    <div className="profile-section">
-                      <div className="profile-subtitle">🎓 学历与认证</div>
-                      <ul className="jd-list">
-                        {jdResult.target_profile.education_certification.map((item, i) => (
+                    {/* 隐性要求 */}
+                    <div className="jd-mini-card">
+                      <div className="jd-mini-icon">⭐</div>
+                      <div className="jd-mini-title">隐性要求</div>
+                      <ul className="jd-bullet-list">
+                        {jdResult.soft_requirements?.map((item, i) => (
                           <li key={i}>{item}</li>
                         ))}
                       </ul>
                     </div>
-                    )}
+                    {/* 理想候选人画像 */}
+                    <div className="jd-mini-card">
+                      <div className="jd-mini-icon">👤</div>
+                      <div className="jd-mini-title">理想候选人画像</div>
+                      <p className="jd-candidate-desc">
+                        {jdResult.ideal_candidate || "暂无数据"}
+                      </p>
+                    </div>
                   </div>
-                  )}
 
-                  {/* Card 6: Must-have vs Nice-to-have */}
-                  {jdResult.requirements_tiers && (
-                  <div className="jd-card jd-card-wide">
-                    <div className="jd-card-title">📊 硬性门槛 vs 加分项</div>
-                    {jdResult.requirements_tiers.must_have && (
-                    <div className="tier-section">
-                      <div className="tier-label tier-must">🔴 硬性门槛（必须满足）</div>
-                      <ul className="jd-list">
-                        {jdResult.requirements_tiers.must_have.map((item, i) => (
-                          <li key={i} className="tier-item-must">{item}</li>
+                  {/* 关键词标签栏 */}
+                  {jdResult.keywords && jdResult.keywords.length > 0 && (
+                    <div className="jd-keyword-bar">
+                      <div className="jd-keyword-bar-inner">
+                        <span className="jd-keyword-bar-icon">🏷️</span>
+                        {jdResult.keywords.map((kw, i) => (
+                          <span key={i} className="jd-keyword-tag">{kw}</span>
                         ))}
-                      </ul>
+                      </div>
                     </div>
-                    )}
-                    {jdResult.requirements_tiers.nice_to_have && (
-                    <div className="tier-section" style={{ marginTop: 10 }}>
-                      <div className="tier-label tier-nice">🟢 加分项（有则更好）</div>
-                      <ul className="jd-list">
-                        {jdResult.requirements_tiers.nice_to_have.map((item, i) => (
-                          <li key={i} className="tier-item-nice">{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    )}
-                  </div>
                   )}
                 </div>
               </>
