@@ -133,7 +133,7 @@ function genId() {
 // Component
 // ============================================================
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"jd" | "resume">("resume");
+  const [activeTab, setActiveTab] = useState<"jd" | "resume">("jd");
   const [jdContext, setJdContext] = useState<JDAnalysis | null>(null);
   const [showJdBanner, setShowJdBanner] = useState(true);
 
