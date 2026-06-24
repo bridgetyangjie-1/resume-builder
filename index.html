@@ -1590,40 +1590,49 @@
 
     /** 下载 PDF（使用 html2canvas + jsPDF） */
     async function downloadPDF() {
-      const canvasEl = document.getElementById('a4Canvas');
-      if (!canvasEl) return;
+      const sourceEl = document.getElementById('a4Canvas');
+      if (!sourceEl) return;
       try {
         setExportStatus('正在生成 PDF…', false);
         btnExportPDF.disabled = true;
 
-        // 用 html2canvas 截取 A4 画布
-        const canvas = await html2canvas(canvasEl, {
+        // 创建离屏克隆：全尺寸 100% 渲染，避免缩放/变换干扰
+        const clone = sourceEl.cloneNode(true);
+        clone.id = 'pdf-temp-clone';
+        // 移除 shadow 和缩放变换，固定尺寸
+        clone.style.cssText = 'position:fixed;left:-9999px;top:0;width:210mm;min-height:297mm;'
+          + 'padding:20mm 18mm;background:#fff;box-sizing:border-box;'
+          + 'font-family:Arial,Helvetica,"PingFang SC","Microsoft YaHei",sans-serif;'
+          + 'color:#1f2937;line-height:1.5;font-size:10pt;transform:none;';
+        document.body.appendChild(clone);
+
+        // 等一帧确保渲染完成
+        await new Promise(function(r) { requestAnimationFrame(r); });
+
+        const canvas = await html2canvas(clone, {
           scale: 2,
           useCORS: true,
           backgroundColor: '#ffffff',
           logging: false
         });
 
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({
+        document.body.removeChild(clone);
+
+        var imgData = canvas.toDataURL('image/jpeg', 0.95);
+        var jsPDF = window.jspdf.jsPDF;
+        var pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
           format: 'a4'
         });
 
-        const pdfW = 210;
-        const pdfH = 297;
-        // 图片等比例适配 A4
-        const imgW = canvas.width;
-        const imgH = canvas.height;
-        const ratio = Math.min(pdfW / imgW, pdfH / imgH);
-        const finalW = imgW * ratio;
-        const finalH = imgH * ratio;
-        const x = (pdfW - finalW) / 2;
-        const y = (pdfH - finalH) / 2;
+        // 图片填满 A4 宽度（保持比例），顶部对齐，无留白
+        var pdfW = 210;
+        var imgAspect = canvas.width / canvas.height;
+        var finalW = pdfW;
+        var finalH = pdfW / imgAspect;
 
-        pdf.addImage(imgData, 'JPEG', x, y, finalW, finalH);
+        pdf.addImage(imgData, 'JPEG', 0, 0, finalW, finalH);
         pdf.save(data.name ? data.name + '_简历.pdf' : '简历.pdf');
 
         setExportStatus('PDF 已下载 ✓', true);
