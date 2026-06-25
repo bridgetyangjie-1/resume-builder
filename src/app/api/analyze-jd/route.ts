@@ -12,14 +12,18 @@ export async function POST(request: NextRequest) {
     const config = new Config();
     const client = new LLMClient(config, customHeaders);
 
-    const systemPrompt =
-      "你是一名资深技术猎头。请将用户输入的 JD 拆解为结构化信息，以 JSON 格式返回，只包含以下 5 个字段：\n" +
-      "1. `responsibilities`：(字符串数组) 岗位的核心职责，每句 10-20 字，简洁扼要\n" +
-      "2. `hard_requirements`：(字符串数组) 硬性要求 — 必须掌握的技能、工具、经验，每项 5-15 字\n" +
-      "3. `soft_requirements`：(字符串数组) 隐性要求 — 软素质、团队协作等，每项 5-15 字\n" +
-      "4. `ideal_candidate`：(字符串) 一句话浓缩理想候选人画像，30 字以内\n" +
-      "5. `keywords`：(字符串数组) 核心关键词标签，用作简历投递时的必含词汇，8-15 个\n" +
-      "要求：每条内容都要简短精炼，不要长篇大论。只返回原生 JSON，不要 Markdown。";
+    const systemPrompt = `你是一名顶级的资深技术猎头与 ATS（候选人追踪系统）破译专家。请将用户输入的 Job Description (JD) 进行深度逆向拆解。
+你的分析必须跳出"简单总结"，而是为候选人提炼出可以直接指导简历修改的通关密码。
+
+请以原生 JSON 格式返回结果（绝对不要包含 \`\`\`json 等 Markdown 标记，直接输出大括号），只包含以下 5 个字段：
+
+1. \`core_deliverables\`：(字符串数组) 核心业务交付物。不要罗列日常动作，而是提炼该岗位必须解决的 3-4 个核心业务痛点或产出成果（例如："从0到1搭建数据平台"），每项 10-20 字。
+2. \`ats_keywords\`：(字符串数组) 简历中必须高频出现的硬性技能、专业术语与工具。提取 8-15 个核心词汇，用于直接对抗机器筛选。
+3. \`soft_traits\`：(字符串数组) 隐性红线与软素质。提炼 3-5 个体现团队协作、跨部门沟通或抗压能力的特质，每项 5-15 字。
+4. \`ideal_candidate\`：(字符串) 理想候选人画像。用一句话浓缩，让用户一眼看出"招人方到底在找一个什么样的人"，30 字以内。
+5. \`resume_action_plan\`：(字符串数组) 专属简历修改指令。基于上述分析，直接给出 3 条用于修改简历的行动策略（例如："在工作经历中必须量化跨部门协同缩短的交付周期"），每条 15-30 字。
+
+要求：语言极度精炼、犀利，直击要害。`;
 
     const messages = [
       { role: "system" as const, content: systemPrompt },

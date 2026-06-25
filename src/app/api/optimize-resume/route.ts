@@ -17,12 +17,12 @@ export async function POST(request: NextRequest) {
 
     if (jdContext) {
       systemPrompt +=
-        "\n\n请参考以下 JD 分析结果进行针对性优化：\n" +
-        "1. 重点融入这些关键词：" + (jdContext.keywords?.join("、") || "无") + "\n" +
-        "2. 强调具备交付这些职责的能力：" + (jdContext.responsibilities?.join("、") || "相关职责") + "\n" +
-        "3. 侧面展现这些软素质：" + (jdContext.soft_requirements?.join("、") || "无") + "\n" +
+        "\n\n请参考以下 JD 逆向拆解结果进行针对性优化：\n" +
+        "1. 简历中必须高频出现这些 ATS 关键词：" + (jdContext.ats_keywords?.join("、") || "无") + "\n" +
+        "2. 强调具备交付这些核心成果的能力：" + (jdContext.core_deliverables?.join("、") || "相关成果") + "\n" +
+        "3. 侧面展现这些软素质：" + (jdContext.soft_traits?.join("、") || "无") + "\n" +
         "4. 匹配候选人画像：" + (jdContext.ideal_candidate || "相关岗位") + "\n" +
-        "5. 确保体现硬性要求：" + (jdContext.hard_requirements?.join("、") || "无");
+        "5. 严格遵循以下简历修改指令：" + (jdContext.resume_action_plan?.join("；") || "无");
     }
 
     const customHeaders = HeaderUtils.extractForwardHeaders(request.headers);

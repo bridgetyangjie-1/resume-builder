@@ -36,11 +36,11 @@ interface ResumeData {
 }
 
 interface JDAnalysis {
-  responsibilities: string[];
-  hard_requirements: string[];
-  soft_requirements: string[];
+  core_deliverables: string[];
+  ats_keywords: string[];
+  soft_traits: string[];
   ideal_candidate: string;
-  keywords: string[];
+  resume_action_plan: string[];
 }
 
 const DEFAULT_DATA: ResumeData = {
@@ -766,7 +766,7 @@ export default function Home() {
 
   // ============ JD Context Banner ============
   const jdContextKeywords = jdContext
-    ? jdContext.keywords?.slice(0, 5).join(", ")
+    ? jdContext.ats_keywords?.slice(0, 5).join(", ")
     : "";
 
   // ============ Render ============
@@ -864,32 +864,32 @@ export default function Home() {
               <>
                 <div className="jd-results-scroll">
                   <div className="jd-grid-2x2">
-                    {/* 岗位职责 */}
+                    {/* 核心业务交付物 */}
                     <div className="jd-mini-card">
                       <div className="jd-mini-icon">📋</div>
-                      <div className="jd-mini-title">岗位职责</div>
+                      <div className="jd-mini-title">核心业务交付物</div>
                       <ul className="jd-bullet-list">
-                        {jdResult.responsibilities?.map((item, i) => (
+                        {jdResult.core_deliverables?.map((item, i) => (
                           <li key={i}>{item}</li>
                         ))}
                       </ul>
                     </div>
-                    {/* 硬性要求 */}
+                    {/* ATS 关键词 */}
                     <div className="jd-mini-card">
                       <div className="jd-mini-icon">🎯</div>
-                      <div className="jd-mini-title">硬性要求</div>
-                      <ul className="jd-bullet-list">
-                        {jdResult.hard_requirements?.map((item, i) => (
-                          <li key={i}>{item}</li>
+                      <div className="jd-mini-title">ATS 必含关键词</div>
+                      <div className="ats-tags">
+                        {jdResult.ats_keywords?.map((kw, i) => (
+                          <span key={i} className="ats-tag">{kw}</span>
                         ))}
-                      </ul>
+                      </div>
                     </div>
-                    {/* 隐性要求 */}
+                    {/* 隐性红线与软素质 */}
                     <div className="jd-mini-card">
                       <div className="jd-mini-icon">⭐</div>
-                      <div className="jd-mini-title">隐性要求</div>
+                      <div className="jd-mini-title">隐性红线与软素质</div>
                       <ul className="jd-bullet-list">
-                        {jdResult.soft_requirements?.map((item, i) => (
+                        {jdResult.soft_traits?.map((item, i) => (
                           <li key={i}>{item}</li>
                         ))}
                       </ul>
@@ -904,15 +904,15 @@ export default function Home() {
                     </div>
                   </div>
 
-                  {/* 关键词标签栏 */}
-                  {jdResult.keywords && jdResult.keywords.length > 0 && (
-                    <div className="jd-keyword-bar">
-                      <div className="jd-keyword-bar-inner">
-                        <span className="jd-keyword-bar-icon">🏷️</span>
-                        {jdResult.keywords.map((kw, i) => (
-                          <span key={i} className="jd-keyword-tag">{kw}</span>
+                  {/* 简历修改指令 */}
+                  {jdResult.resume_action_plan && jdResult.resume_action_plan.length > 0 && (
+                    <div className="jd-action-plan">
+                      <div className="jd-action-plan-title">💡 简历修改指令</div>
+                      <ul className="jd-action-list">
+                        {jdResult.resume_action_plan.map((item, i) => (
+                          <li key={i}>{item}</li>
                         ))}
-                      </div>
+                      </ul>
                     </div>
                   )}
                 </div>
