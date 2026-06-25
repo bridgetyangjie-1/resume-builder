@@ -158,9 +158,14 @@ export default function Home() {
   const [jdError, setJdError] = useState("");
 
   // Diagnosis state
+  interface RedFlag {
+    quote: string;
+    issue: string;
+    suggestion: string;
+  }
   interface DiagnosisResult {
     weight_analysis: string;
-    red_flags: string[];
+    red_flags: RedFlag[];
     structural_advice: string[];
   }
   const [diagnosis, setDiagnosis] = useState<DiagnosisResult | null>(null);
@@ -1008,13 +1013,24 @@ export default function Home() {
               {/* Red Flags */}
               <div className="diagnose-card diagnose-card-redflags">
                 <div className="diagnose-card-title">⚠️ 红旗警告 (Red Flags)</div>
-                <ul className="diagnose-list">
+                <div className="redflags-list">
                   {diagnosis.red_flags.map((flag, i) => (
-                    <li key={i} className="diagnose-list-item redflag">
-                      {highlightRefs(flag)}
-                    </li>
+                    <div key={i} className="redflag-item">
+                      <div className="redflag-quote">
+                        <span className="redflag-quote-label">原文：</span>
+                        <span className="redflag-quote-text">&ldquo;{flag.quote}&rdquo;</span>
+                      </div>
+                      <div className="redflag-issue">
+                        <span className="redflag-issue-label">问题：</span>
+                        {flag.issue}
+                      </div>
+                      <div className="redflag-suggestion">
+                        <span className="redflag-suggestion-label">建议改为：</span>
+                        {flag.suggestion}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
 
               {/* Structural Advice */}
