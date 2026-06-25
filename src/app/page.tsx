@@ -163,10 +163,15 @@ export default function Home() {
     issue: string;
     suggestion: string;
   }
+  interface AdviceItem {
+    quote: string;
+    issue: string;
+    suggestion: string;
+  }
   interface DiagnosisResult {
     weight_analysis: string;
     red_flags: RedFlag[];
-    structural_advice: string[];
+    structural_advice: AdviceItem[];
   }
   const [diagnosis, setDiagnosis] = useState<DiagnosisResult | null>(null);
   const [diagnoseLoading, setDiagnoseLoading] = useState(false);
@@ -1036,14 +1041,24 @@ export default function Home() {
               {/* Structural Advice */}
               <div className="diagnose-card diagnose-card-advice">
                 <div className="diagnose-card-title">💡 大刀阔斧的修改策略</div>
-                <ul className="diagnose-list">
-                  {diagnosis.structural_advice.map((advice, i) => (
-                    <li key={i} className="diagnose-list-item advice">
-                      <span className="advice-num">{i + 1}</span>
-                      {highlightRefs(advice)}
-                    </li>
+                <div className="advice-items">
+                  {diagnosis.structural_advice.map((item, i) => (
+                    <div key={i} className="flag-item">
+                      <div className="flag-quote">
+                        <span className="flag-label">原文：</span>
+                        {item.quote}
+                      </div>
+                      <div className="flag-issue">
+                        <span className="flag-label issue-label">结构调整：</span>
+                        {item.issue}
+                      </div>
+                      <div className="flag-suggestion">
+                        <span className="flag-label suggestion-label">建议改为：</span>
+                        {item.suggestion}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             </div>
           )}
