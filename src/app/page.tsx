@@ -793,6 +793,18 @@ export default function Home() {
     }
   }, [data, skillsArray]);
 
+  // ============ Highlight References in Diagnosis Text ============
+  const highlightRefs = useCallback((text: string) => {
+    // Match text within square brackets like [公司名] and render with highlight
+    const parts = text.split(/(\[[^\]]+\])/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('[') && part.endsWith(']')) {
+        return <span key={i} className="ref-highlight">{part.slice(1, -1)}</span>;
+      }
+      return <span key={i}>{part}</span>;
+    });
+  }, []);
+
   // ============ Render A4 Canvas HTML ============
   const renderCanvasHTML = useCallback(() => {
     const d = data;
@@ -999,7 +1011,7 @@ export default function Home() {
                 <ul className="diagnose-list">
                   {diagnosis.red_flags.map((flag, i) => (
                     <li key={i} className="diagnose-list-item redflag">
-                      {flag}
+                      {highlightRefs(flag)}
                     </li>
                   ))}
                 </ul>
@@ -1012,7 +1024,7 @@ export default function Home() {
                   {diagnosis.structural_advice.map((advice, i) => (
                     <li key={i} className="diagnose-list-item advice">
                       <span className="advice-num">{i + 1}</span>
-                      {advice}
+                      {highlightRefs(advice)}
                     </li>
                   ))}
                 </ul>

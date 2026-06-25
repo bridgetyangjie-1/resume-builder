@@ -1192,3 +1192,14 @@ body {
   font-size: 14px;
   margin: 0;
 }
+
+/* Reference Highlight in Diagnosis */
+.ref-highlight {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.9em;
+  border: 1px solid #f59e0b;
+}
