@@ -139,7 +139,20 @@ export default function Home() {
   const [showJdBanner, setShowJdBanner] = useState(true);
 
   // JD Analysis state
-  const [jdText, setJdText] = useState("");
+  const [jdText, setJdText] = useState(`【岗位职责】
+1. 负责 AI 产品的需求分析、产品设计、版本规划与上线推进，覆盖 Agent / Copilot / 智能分析等场景；
+2. 与算法、工程、设计、数据团队紧密协作，将大模型能力转化为可交付的产品功能；
+3. 深入企业客户业务场景，挖掘可被 AI 重构的流程与决策环节，定义 PMF 信号；
+4. 设计 Prompt 编排 / RAG / 工具调用 / 评估体系等关键链路，保障效果、稳定性与可解释性；
+5. 主导用户访谈、可用性测试与上线数据分析，持续迭代产品；
+6. 跟踪国内外 LLM / Agent / RAG 进展，形成竞品与最佳实践库。
+
+【任职要求】
+1. 3 年以上产品经理经验，有 ToB SaaS / 企业级产品落地经验；
+2. 理解 LLM / Prompt / RAG / Embedding / Function Call 等基本概念，能与算法同频讨论；
+3. 优秀的业务抽象与产品架构能力，能从 0 到 1 拆解复杂场景；
+4. 强执行力与跨团队推动力，能在混沌中推动事情向前；
+5. 加分项：有 AI 产品从 0 到 1 经验；技术背景；写过技术 Blog；熟悉 Python / SQL。`);
   const [jdLoading, setJdLoading] = useState(false);
   const [jdResult, setJdResult] = useState<JDAnalysis | null>(null);
   const [jdError, setJdError] = useState("");
