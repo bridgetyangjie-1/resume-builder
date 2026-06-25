@@ -152,6 +152,10 @@ export default function Home() {
   const [hasSaved, setHasSaved] = useState(false);
   const [exportStatus, setExportStatus] = useState("");
 
+  // Inline polish state
+  const [polishLoading, setPolishLoading] = useState<Record<number, boolean>>({});
+  const [polishSuggestion, setPolishSuggestion] = useState<Record<number, string>>({});
+
   const a4CanvasRef = useRef<HTMLDivElement>(null);
   const skillsInputRef = useRef<HTMLInputElement>(null);
   const avatarFileRef = useRef<HTMLInputElement>(null);
@@ -282,6 +286,75 @@ export default function Home() {
     },
     [data.workExperience, jdContext, updateWork]
   );
+
+  // ============ General Polish (Step 1) ============
+  const handleGeneralPolish = useCallback(
+    async (id: number) => {
+      const entry = data.workExperience.find((w) => w.id === id);
+      if (!entry || !entry.description.trim()) return;
+      setPolishLoading((prev) => ({ ...prev, [id]: true }));
+      setPolishSuggestion((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      try {
+        const res = await fetch("/api/general-polish", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: entry.description }),
+        });
+        const json = await res.json();
+        if (json.success) {
+          setPolishSuggestion((prev) => ({ ...prev, [id]: json.data }));
+        } else {
+          setExportStatus("❌ " + json.error);
+        }
+      } catch {
+        setExportStatus("❌ 网络错误，请重试");
+      } finally {
+        setPolishLoading((prev) => ({ ...prev, [id]: false }));
+      }
+    },
+    [data.workExperience]
+  );
+
+  const applyPolishSuggestion = useCallback(
+    (id: number) => {
+      const suggestion = polishSuggestion[id];
+      if (!suggestion) return;
+      updateWork(id, "description", suggestion);
+      setPolishSuggestion((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    },
+    [polishSuggestion, updateWork]
+  );
+
+  const applyPolish = useCallback(
+    (_type: string, id: number) => {
+      applyPolishSuggestion(id);
+    },
+    [applyPolishSuggestion]
+  );
+
+  const cancelPolish = useCallback((id: number) => {
+    setPolishSuggestion((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }, []);
+
+  const cancelPolishSuggestion = useCallback((id: number) => {
+    setPolishSuggestion((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }, []);
 
   // ============ Education ============
   const addEdu = useCallback(() => {
@@ -1106,21 +1179,12 @@ export default function Home() {
                   <div key={w.id} className="entry-card">
                     <div className="entry-card-header">
                       <span className="entry-label">{w.company || "新条目"}</span>
-                      <div style={{ display: "flex", gap: 4 }}>
-                        <button
-                          className="btn btn-outline btn-sm"
-                          onClick={() => optimizeWork(w.id)}
-                          disabled={!w.description.trim()}
-                        >
-                          ✨ AI
-                        </button>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => removeWork(w.id)}
-                        >
-                          删除
-                        </button>
-                      </div>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => removeWork(w.id)}
+                      >
+                        删除
+                      </button>
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       <div className="form-grid-2">
@@ -1153,6 +1217,24 @@ export default function Home() {
                           onChange={(e) => updateWork(w.id, "endDate", e.target.value)}
                         />
                       </div>
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: 4, marginTop: 2 }}>
+                        <button
+                          className="btn btn-outline btn-sm"
+                          onClick={() => handleGeneralPolish(w.id)}
+                          disabled={!w.description.trim() || polishLoading[w.id]}
+                          style={{ fontSize: 11, padding: "2px 8px" }}
+                        >
+                          {polishLoading[w.id] ? "思考中..." : "✨ 通用润色"}
+                        </button>
+                        <button
+                          className="btn btn-outline btn-sm"
+                          disabled
+                          title="请先完成 JD 深度解析"
+                          style={{ fontSize: 11, padding: "2px 8px", opacity: 0.4, cursor: "not-allowed" }}
+                        >
+                          🎯 适配 JD
+                        </button>
+                      </div>
                       <textarea
                         className="form-textarea"
                         placeholder="核心工作内容与量化成果"
@@ -1160,6 +1242,16 @@ export default function Home() {
                         value={w.description}
                         onChange={(e) => updateWork(w.id, "description", e.target.value)}
                       />
+                      {polishSuggestion[w.id] && (
+                        <div className="polish-suggestion-box">
+                          <div className="polish-suggestion-label">AI 润色建议</div>
+                          <div className="polish-suggestion-text">{polishSuggestion[w.id]}</div>
+                          <div className="polish-suggestion-actions">
+                            <button className="btn-apply" onClick={() => applyPolish("work", w.id)}>✅ 应用</button>
+                            <button className="btn-cancel" onClick={() => cancelPolish(w.id)}>❌ 取消</button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
