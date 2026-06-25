@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
 }
 
 重要要求：
+- 注意字段名：red_flags 和 structural_advice 数组中的每个对象必须包含 quote、issue、suggestion 三个字段
 - quote 字段只能包含简历中的纯文本内容，请妥善转义引号以保证 JSON 合法
 - red_flags 提供 2-3 条，引用简历中写得不好的原文
 - structural_advice 提供 2-3 条，引用需要调整的原文
