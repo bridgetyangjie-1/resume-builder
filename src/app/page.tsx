@@ -1018,47 +1018,59 @@ export default function Home() {
               {/* Red Flags */}
               <div className="diagnose-card diagnose-card-redflags">
                 <div className="diagnose-card-title">⚠️ 红旗警告 (Red Flags)</div>
-                <div className="redflags-list">
-                  {diagnosis.red_flags.map((flag, i) => (
-                    <div key={i} className="redflag-item">
-                      <div className="redflag-quote">
-                        <span className="redflag-quote-label">原文：</span>
-                        <span className="redflag-quote-text">&ldquo;{flag.quote}&rdquo;</span>
+                {diagnosis.red_flags && diagnosis.red_flags.length > 0 ? (
+                  <div className="redflags-list">
+                    {diagnosis.red_flags.map((flag, i) => (
+                      <div key={i} className="redflag-item">
+                        <div className="redflag-quote">
+                          <span className="redflag-quote-label">原文：</span>
+                          <span className="redflag-quote-text">&ldquo;{flag.quote}&rdquo;</span>
+                        </div>
+                        <div className="redflag-issue">
+                          <span className="redflag-issue-label">问题：</span>
+                          {flag.issue}
+                        </div>
+                        <div className="redflag-suggestion">
+                          <span className="redflag-suggestion-label">建议改为：</span>
+                          {flag.suggestion}
+                        </div>
                       </div>
-                      <div className="redflag-issue">
-                        <span className="redflag-issue-label">问题：</span>
-                        {flag.issue}
-                      </div>
-                      <div className="redflag-suggestion">
-                        <span className="redflag-suggestion-label">建议改为：</span>
-                        {flag.suggestion}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ color: "#86868b", fontSize: 13, padding: "12px 0" }}>
+                    暂无红旗警告
+                  </div>
+                )}
               </div>
 
               {/* Structural Advice */}
               <div className="diagnose-card diagnose-card-advice">
                 <div className="diagnose-card-title">💡 大刀阔斧的修改策略</div>
-                <div className="redflags-list">
-                  {diagnosis.structural_advice.map((item, i) => (
-                    <div key={i} className="redflag-item advice-item">
-                      <div className="redflag-quote">
-                        <span className="redflag-quote-label">原文：</span>
-                        <span className="redflag-quote-text">&ldquo;{item.quote}&rdquo;</span>
+                {diagnosis.structural_advice && diagnosis.structural_advice.length > 0 ? (
+                  <div className="redflags-list">
+                    {diagnosis.structural_advice.map((item, i) => (
+                      <div key={i} className="redflag-item advice-item">
+                        <div className="redflag-quote">
+                          <span className="redflag-quote-label">原文：</span>
+                          <span className="redflag-quote-text">&ldquo;{item.quote}&rdquo;</span>
+                        </div>
+                        <div className="redflag-issue">
+                          <span className="redflag-issue-label">结构调整：</span>
+                          {item.issue}
+                        </div>
+                        <div className="redflag-suggestion">
+                          <span className="redflag-suggestion-label">建议改为：</span>
+                          {item.suggestion}
+                        </div>
                       </div>
-                      <div className="redflag-issue">
-                        <span className="redflag-issue-label">结构调整：</span>
-                        {item.issue}
-                      </div>
-                      <div className="redflag-suggestion">
-                        <span className="redflag-suggestion-label">建议改为：</span>
-                        {item.suggestion}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ color: "#86868b", fontSize: 13, padding: "12px 0" }}>
+                    暂无修改策略建议
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1166,7 +1178,7 @@ export default function Home() {
                   </div>
 
                   {/* 简历修改指令 */}
-                  {jdResult.resume_action_plan && jdResult.resume_action_plan.length > 0 && (
+                  {jdResult.resume_action_plan && jdResult.resume_action_plan.length > 0 ? (
                     <div className="jd-action-plan">
                       <div className="jd-action-plan-title">💡 简历修改指令</div>
                       <ul className="jd-action-list">
@@ -1174,6 +1186,13 @@ export default function Home() {
                           <li key={i}>{item}</li>
                         ))}
                       </ul>
+                    </div>
+                  ) : (
+                    <div className="jd-action-plan" style={{ opacity: 0.6 }}>
+                      <div className="jd-action-plan-title">💡 简历修改指令</div>
+                      <div style={{ color: "#86868b", fontSize: 13, padding: "8px 0" }}>
+                        暂无修改指令
+                      </div>
                     </div>
                   )}
                 </div>
