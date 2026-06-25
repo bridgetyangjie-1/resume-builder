@@ -1280,3 +1280,35 @@ body {
   white-space: nowrap;
   flex-shrink: 0;
 }
+
+/* Advice items - reuse redflag structure but with blue/teal theme */
+.advice-item {
+  border-color: #bfdbfe !important;
+}
+
+.advice-item .redflag-quote {
+  background: #eff6ff;
+  border-left-color: #3b82f6;
+}
+
+.advice-item .redflag-quote-label {
+  color: #2563eb;
+}
+
+.advice-item .redflag-quote-text {
+  color: #1e40af;
+}
+
+.advice-item .redflag-issue-label {
+  color: #2563eb;
+}
+
+.advice-item .redflag-suggestion {
+  background: #f0fdfa;
+  border-left-color: #14b8a6;
+  color: #115e59;
+}
+
+.advice-item .redflag-suggestion-label {
+  color: #0d9488;
+}

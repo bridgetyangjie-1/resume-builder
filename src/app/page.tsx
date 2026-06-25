@@ -1041,19 +1041,19 @@ export default function Home() {
               {/* Structural Advice */}
               <div className="diagnose-card diagnose-card-advice">
                 <div className="diagnose-card-title">💡 大刀阔斧的修改策略</div>
-                <div className="advice-items">
+                <div className="redflags-list">
                   {diagnosis.structural_advice.map((item, i) => (
-                    <div key={i} className="flag-item">
-                      <div className="flag-quote">
-                        <span className="flag-label">原文：</span>
-                        {item.quote}
+                    <div key={i} className="redflag-item advice-item">
+                      <div className="redflag-quote">
+                        <span className="redflag-quote-label">原文：</span>
+                        <span className="redflag-quote-text">&ldquo;{item.quote}&rdquo;</span>
                       </div>
-                      <div className="flag-issue">
-                        <span className="flag-label issue-label">结构调整：</span>
+                      <div className="redflag-issue">
+                        <span className="redflag-issue-label">结构调整：</span>
                         {item.issue}
                       </div>
-                      <div className="flag-suggestion">
-                        <span className="flag-label suggestion-label">建议改为：</span>
+                      <div className="redflag-suggestion">
+                        <span className="redflag-suggestion-label">建议改为：</span>
                         {item.suggestion}
                       </div>
                     </div>
