@@ -134,7 +134,7 @@ function genId() {
 // Component
 // ============================================================
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<"jd" | "resume">("jd");
+  const [activeTab, setActiveTab] = useState<"resume" | "diagnose" | "jd">("resume");
   const [jdContext, setJdContext] = useState<JDAnalysis | null>(null);
   const [showJdBanner, setShowJdBanner] = useState(true);
 
@@ -156,6 +156,16 @@ export default function Home() {
   const [jdLoading, setJdLoading] = useState(false);
   const [jdResult, setJdResult] = useState<JDAnalysis | null>(null);
   const [jdError, setJdError] = useState("");
+
+  // Diagnosis state
+  interface DiagnosisResult {
+    weight_analysis: string;
+    red_flags: string[];
+    structural_advice: string[];
+  }
+  const [diagnosis, setDiagnosis] = useState<DiagnosisResult | null>(null);
+  const [diagnoseLoading, setDiagnoseLoading] = useState(false);
+  const [diagnoseError, setDiagnoseError] = useState("");
 
   // Resume builder state
   const [data, setData] = useState<ResumeData>({ ...DEFAULT_DATA });
@@ -564,6 +574,54 @@ export default function Home() {
     }
   }, [jdText]);
 
+  // ============ Resume Diagnosis ============
+  const diagnoseResume = useCallback(async () => {
+    setDiagnoseLoading(true);
+    setDiagnoseError("");
+    setDiagnosis(null);
+    try {
+      // Collect all resume data
+      const resumePayload = {
+        name: data.name,
+        position: data.position,
+        phone: data.phone,
+        email: data.email,
+        website: data.website,
+        workExperience: data.workExperience.map((w) => ({
+          company: w.company,
+          title: w.title,
+          startDate: w.startDate,
+          endDate: w.endDate,
+          description: w.description,
+        })),
+        education: data.education.map((e) => ({
+          school: e.school,
+          major: e.major,
+          degree: e.degree,
+          startDate: e.startDate,
+          endDate: e.endDate,
+        })),
+        skills: data.skills,
+      };
+
+      const res = await fetch("/api/diagnose-resume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resume: resumePayload }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setDiagnosis(json.data);
+      } else {
+        setDiagnoseError(json.error || "诊断失败");
+      }
+    } catch {
+      setDiagnoseError("网络错误，请重试");
+    } finally {
+      setDiagnoseLoading(false);
+    }
+  }, [data]);
+
   // ============ PDF Export ============
   const downloadPDF = useCallback(async () => {
     if (!a4CanvasRef.current) return;
@@ -870,16 +928,22 @@ export default function Home() {
       <div className="tabs-container">
         <div className="tabs-segmented">
           <button
-            className={`tab-btn ${activeTab === "jd" ? "active" : ""}`}
-            onClick={() => setActiveTab("jd")}
-          >
-            📋 第一步：JD 深度解析
-          </button>
-          <button
             className={`tab-btn ${activeTab === "resume" ? "active" : ""}`}
             onClick={() => setActiveTab("resume")}
           >
-            ✏️ 第二步：简历智能打磨
+            ✏️ 简历基础生成
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "diagnose" ? "active" : ""}`}
+            onClick={() => setActiveTab("diagnose")}
+          >
+            🔍 全局简历诊断
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "jd" ? "active" : ""}`}
+            onClick={() => setActiveTab("jd")}
+          >
+            📋 JD 深度解析
           </button>
         </div>
       </div>
@@ -897,7 +961,75 @@ export default function Home() {
         </div>
       )}
 
-      {/* ===== Tab 1: JD Analysis ===== */}
+      {/* ===== Tab 2: Global Diagnosis ===== */}
+      <div
+        className={`tab-content ${activeTab === "diagnose" ? "active" : ""}`}
+        style={{ flex: 1 }}
+      >
+        <div className="diagnose-view">
+          <div className="diagnose-header">
+            <h2 className="diagnose-title">全局简历诊断</h2>
+            <p className="diagnose-subtitle">
+              AI 将从宏观视角审视你的整份简历，找出结构性问题并给出修改策略
+            </p>
+            <button
+              className="diagnose-btn"
+              onClick={diagnoseResume}
+              disabled={diagnoseLoading}
+            >
+              {diagnoseLoading ? "⏳ 诊断中..." : "🔍 生成全局诊断报告"}
+            </button>
+          </div>
+
+          {diagnoseError && (
+            <div className="diagnose-error">{diagnoseError}</div>
+          )}
+
+          {diagnosis && (
+            <div className="diagnose-results">
+              {/* Weight Analysis */}
+              <div className="diagnose-card diagnose-card-weight">
+                <div className="diagnose-card-title">📊 核心权重分析</div>
+                <p className="diagnose-card-text">{diagnosis.weight_analysis}</p>
+              </div>
+
+              {/* Red Flags */}
+              <div className="diagnose-card diagnose-card-redflags">
+                <div className="diagnose-card-title">⚠️ 红旗警告 (Red Flags)</div>
+                <ul className="diagnose-list">
+                  {diagnosis.red_flags.map((flag, i) => (
+                    <li key={i} className="diagnose-list-item redflag">
+                      {flag}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Structural Advice */}
+              <div className="diagnose-card diagnose-card-advice">
+                <div className="diagnose-card-title">💡 大刀阔斧的修改策略</div>
+                <ul className="diagnose-list">
+                  {diagnosis.structural_advice.map((advice, i) => (
+                    <li key={i} className="diagnose-list-item advice">
+                      <span className="advice-num">{i + 1}</span>
+                      {advice}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {!diagnosis && !diagnoseLoading && !diagnoseError && (
+            <div className="diagnose-empty">
+              <div className="diagnose-empty-icon">📋</div>
+              <p>点击上方按钮，AI 将基于你填写的简历内容进行全局诊断</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ===== Tab 3: JD Analysis ===== */}
       <div
         className={`tab-content ${activeTab === "jd" ? "active" : ""}`}
         style={{ flex: 1 }}
